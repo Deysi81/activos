@@ -21,17 +21,17 @@ const navigation = (): VerticalNavItemsType => {
       icon: 'mdi:shield-outline',
     },
     {
-        title: 'Usuario',
+        title: 'Activos',
         icon: 'mdi:account-outline',
         children: [
           {
-            title: 'Nuevo Usuario',
-            path: '/user/usuario/userlist',
+            title: 'Lista de Activos',
+            path: '/listaact',
             icon: 'mdi:account-check',
           },
           {
-            title: 'Vista de Usuario',
-            path: '/user/usuario/view',
+            title: 'Nuevo Activo',
+            path: '/forms',
             icon: 'mdi:account-group',
           },
           {
@@ -41,6 +41,27 @@ const navigation = (): VerticalNavItemsType => {
           }
         ]
     },
+    {
+      title: 'Proveedores',
+      icon: 'mdi:account-outline',
+      children: [
+        {
+          title: 'Lista de Activos',
+          path: '/listaact',
+          icon: 'mdi:account-check',
+        },
+        {
+          title: 'Nuevo Activo',
+          path: '/forms',
+          icon: 'mdi:account-group',
+        },
+        {
+          title: 'Editar Usuario',
+          path: '/user/usuario/newedituser',
+          icon: 'mdi:account-edit-outline',
+        }
+      ]
+  },
     {
       title: 'Imagen',
       path: '/user/usuario/base64/base64',

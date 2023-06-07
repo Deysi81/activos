@@ -43,12 +43,10 @@ import EditUserDrawer from './EditUserDrawer'
 interface Docu {
   _id: string
   name: string
-  lastName: string
-  ci: string
-  email: string
+
   phone: string
   direction: string
-  nationality: string
+
 }
 
 interface CellType {
@@ -72,54 +70,7 @@ const columns = [
       )
     }
   },
-  {
-    flex: 0.1,
-    minWidth: 110,
-    field: 'lastName',
-    headerName: 'Apellido',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <CustomChip
-          skin='light'
-          size='small'
-          label={row.lastName}
-          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-        />
-      )
-    }
-  },
-  {
-    flex: 0.1,
-    minWidth: 110,
-    field: 'ci',
-    headerName: 'CI',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <CustomChip
-          skin='light'
-          size='small'
-          label={row.ci}
-          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-        />
-      )
-    }
-  },
-  {
-    flex: 0.1,
-    minWidth: 110,
-    field: 'email',
-    headerName: 'correo electronico',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <CustomChip
-          skin='light'
-          size='small'
-          label={row.email}
-          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '30px' } }}
-        />
-      )
-    }
-  },
+ 
   {
     flex: 0.1,
     minWidth: 110,
@@ -152,22 +103,7 @@ const columns = [
       )
     }
   },
-  {
-    flex: 0.1,
-    minWidth: 110,
-    field: 'nationality',
-    headerName: 'Nacionalidad',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <CustomChip
-          skin='light'
-          size='small'
-          label={row.nationality}
-          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-        />
-      )
-    }
-  },
+
   {
     flex: 0.1,
     minWidth: 110,

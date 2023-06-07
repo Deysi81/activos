@@ -1,5 +1,5 @@
 // ** React Imports
-import React, { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 // ** MUI Imports
 import Drawer from '@mui/material/Drawer'
@@ -27,14 +27,17 @@ import Icon from 'src/@core/components/icon'
 import { useDispatch } from 'react-redux'
 
 // ** Actions Imports
-import { addUser } from 'src/store/apps/user'
+import user, { addUser } from 'src/store/apps/user'
 
 // ** Types Imports
 import { AppDispatch } from 'src/store'
 import { Direction } from '@mui/material';
 import axios from 'axios'
-import { useRouter } from 'next/router'
-import user from 'src/store/apps/user';
+
+interface SidebarAddUserType {
+  open: boolean
+  toggle: () => void
+}
 
 interface UserData {
   name: string
@@ -63,7 +66,6 @@ const Header = styled(Box)<BoxProps>(({ theme }) => ({
 
 const schema = yup.object().shape({
   direction: yup.string().required(),
-  nationality: yup.string().required(),
   phone: yup
     .string()
     .typeError('')
@@ -72,69 +74,30 @@ const schema = yup.object().shape({
   name: yup
     .string()
     .min(3, obj => showErrors('Nombre', obj.value.length, obj.min))
-    .required(),
- 
+    .required()
 })
 
 const defaultValues = {
   name: '',
   phone: '',
   direction: '',
-  nationality: ''
 }
 
-  const SidebarEditUser = (props: { userId: string }) => {
-  const [state,setState]=useState<boolean>(false)
-  const userId=props.userId;
-  const [user,setUser]=useState<UserData>({
-  name: '',
-  phone: '',
-  direction: '',
-  nationality: '',
-});
+const SidebarAddUser = (props: SidebarAddUserType) => {
+  // ** Props
+  const { open, toggle } = props
 
-const onInputChange=(e:React.ChangeEvent<HTMLInputElement>)=>{
-  setUser({...user,[e.target.name]:e.target.value})
-}
-const getData = async() => {
-  await axios
-    .get<UserData>(`${process.env.NEXT_PUBLIC_PERSONAL}${userId}`)
-    .then(response => {
-      console.log(response.data)
-      setUser(response.data)
-    })
-    .catch(error => {
-      console.error(error);
-    });
-};
-const OnSubmit=async(e:React.FormEvent)=>{
-  e.preventDefault();
-  console.log(user)
-  await axios.put(`${process.env.NEXT_PUBLIC_PERSONAL}${userId}`, user);
-}
-useEffect(() => {
-  if (userId) {
-    getData();
-  }
-}, [userId]);
+  // ** State
+  const [plan, setPlan] = useState<string>('basic')
+  const [role, setRole] = useState<string>('subscriber')
+  const [asset, setAsset] = useState<UserData>();
 
-  const toggleDrawer =
-    (open: boolean) =>
-    (event: React.KeyboardEvent | React.MouseEvent) => {
-      if (
-        event.type === 'keydown' &&
-        ((event as React.KeyboardEvent).key === 'Tab' ||
-          (event as React.KeyboardEvent).key === 'Shift')
-      ) {
-        return;
-      }
-
-      setState(open);
-    };
   // ** Hooks
+  const dispatch = useDispatch<AppDispatch>()
   const {
     reset,
     control,
+    handleSubmit,
     formState: { errors }
   } = useForm({
     defaultValues,
@@ -142,38 +105,54 @@ useEffect(() => {
     resolver: yupResolver(schema)
   })
 
+  const handleSave = async() => {
+      await axios
+        .post(`http://10.10.214.219:8080/supplier`, asset)
+        .then(response => {
+          console.log(response.data);
+          toggle()
+          reset()
+        })
+        .catch(error => {
+          console.error(error);
+        });
+  };
+
+  const handleClose = () => {
+    setPlan('basic')
+    setRole('subscriber')
+    toggle()
+    reset()
+  }
+
   return (
-    <>
-    <Button
-    style={{backgroundColor:'#94bb68',color:'white',borderRadius:'10px'}}
-    onClick={toggleDrawer(true)}>EDITAR</Button>
     <Drawer
-    style={{border:'2px solid white', margin:'theme.spacing(2)'}}
-      open={state}
-      onClose={toggleDrawer(false)}
+      open={open}
       anchor='right'
       variant='temporary'
+      onClose={handleClose}
       ModalProps={{ keepMounted: true }}
-      sx={{ '& .MuiDrawer-paper': { width: { xs: 400, sm: 800} } }}
+      sx={{ '& .MuiDrawer-paper': { width: { xs: 500, sm: 600 } } }}
     >
       <Header>
-        <Typography variant='h6'>Agregar Usuario</Typography>
-        <IconButton size='small' onClick={toggleDrawer(false)} sx={{ color: 'text.primary' }}>
+        <Typography variant='h6'>Agregar Proveedor</Typography>
+        <IconButton size='small' onClick={handleClose} sx={{ color: 'text.primary' }}>
           <Icon icon='mdi:close' fontSize={20} />
         </IconButton>
       </Header>
       <Box sx={{ p: 5 }}>
-        <form onSubmit={OnSubmit}>
-          <FormControl fullWidth sx={{ mb: 4}}>
+        <form onSubmit={()=>handleSave()}>
+          <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='name'
               control={control}
               rules={{ required: true }}
               render={({ field: { value, onChange } }) => (
                 <TextField
+                  value={value}
                   label='Nombre'
-                  onChange={onInputChange}
-                  placeholder={user.name}
+                  onChange={onChange}
+                  placeholder='Ruth'
                   error={Boolean(errors.name)}
                   autoComplete='off'
                 />
@@ -181,16 +160,17 @@ useEffect(() => {
             />
             {errors.name && <FormHelperText sx={{ color: 'error.main' }}>{errors.name.message}</FormHelperText>}
           </FormControl>
-          <FormControl fullWidth sx={{ mb: 4 }}>
+          <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='phone'
               control={control}
               rules={{ required: true }}
               render={({ field: { value, onChange } }) => (
                 <TextField
+                  value={value}
                   label='Celular'
-                  placeholder={user.phone}
-                  onChange={onInputChange}
+                  placeholder='78906547'
+                  onChange={onChange}
                   error={Boolean(errors.phone)}
                   autoComplete='off'
                 />
@@ -198,16 +178,17 @@ useEffect(() => {
             />
             {errors.phone && <FormHelperText sx={{ color: 'error.main' }}>{errors.phone.message}</FormHelperText>}
           </FormControl>
-          <FormControl fullWidth sx={{ mb: 4 }}>
+          <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='direction'
               control={control}
               rules={{ required: true }}
               render={({ field: { value, onChange } }) => (
                 <TextField
+                  value={value}
                   label='direccion'
-                  onChange={onInputChange}
-                  placeholder={user.direction}
+                  onChange={onChange}
+                  placeholder='Av. Bolivar n°415'
                   error={Boolean(errors.direction)}
                   autoComplete='off'
                 />
@@ -215,36 +196,19 @@ useEffect(() => {
             />
             {errors.direction && <FormHelperText sx={{ color: 'error.main' }}>{errors.direction.message}</FormHelperText>}
           </FormControl>
-          <FormControl fullWidth sx={{ mb: 4 }}>
-            <Controller
-              name='nationality'
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
-                <TextField
-                  label='nacionalidad'
-                  onChange={onInputChange}
-                  placeholder={user.nationality}
-                  error={Boolean(errors.nationality)}
-                  autoComplete='off'
-                />
-              )}
-            />
-            {errors.nationality && <FormHelperText sx={{ color: 'error.main' }}>{errors.nationality.message}</FormHelperText>}
-          </FormControl>
+          
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Button size='large' type='submit' variant='contained' sx={{ mr: 6 }}>
+            <Button size='large' type='submit' variant='contained' sx={{ mr: 3 }}>
               Aceptar
             </Button>
-            <Button size='large' variant='outlined' color='secondary' onClick={toggleDrawer(false)}>
+            <Button size='large' variant='outlined' color='secondary' onClick={handleClose}>
               Cancelar
             </Button>
           </Box>
         </form>
       </Box>
     </Drawer>
-    </> 
   )
 }
 
-export default SidebarEditUser
+export default SidebarAddUser

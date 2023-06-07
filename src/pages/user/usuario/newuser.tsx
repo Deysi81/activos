@@ -49,12 +49,8 @@ import SidebarEditUser from './EditUserDrawer';
 interface UserData {
   _id: string;
   name: string;
-  lastName: string;
-  ci: string;
-  email: string;
   phone: string;
-  direction: string;
-  nationality: string;
+  address: string;
   isActive: boolean;
 }
 
@@ -160,23 +156,7 @@ const User: React.FC = () => {
                   // ... otros estilos personalizados
                 }}
               >
-                CI
-              </TableCell>
-              <TableCell
-                align="right"
-                sx={{
-                  minWidth: 100,
-                  textAlign: 'center',
-                  padding: '10px',
-                  backgroundColor: '#F2E8FF',
-                  borderCollapse: 'separate',
-                  borderSpacing: '0 8px',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                  // ... otros estilos personalizados
-                }}
-              >
+               
                 CORREO ELECTRONICO
               </TableCell>
               <TableCell
@@ -211,40 +191,7 @@ const User: React.FC = () => {
                   // ... otros estilos personalizados
                 }}
               >
-                DIRECCION
-              </TableCell>
-              <TableCell
-                align="right"
-                sx={{
-                  minWidth: 100,
-                  textAlign: 'center',
-                  padding: '10px',
-                  backgroundColor: '#F2E8FF',
-                  borderCollapse: 'separate',
-                  borderSpacing: '0 8px',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                  // ... otros estilos personalizados
-                }}
-              >
-                NACIONALIDAD
-              </TableCell>
-              <TableCell
-                align="right"
-                sx={{
-                  minWidth: 100,
-                  textAlign: 'center',
-                  padding: '10px',
-                  backgroundColor: '#F2E8FF',
-                  borderCollapse: 'separate',
-                  borderSpacing: '0 8px',
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-                  // ... otros estilos personalizados
-                }}
-              >
+               
                 OPCIONES
               </TableCell>
             </TableRow>
@@ -258,12 +205,8 @@ const User: React.FC = () => {
                 <TableCell component="th" scope="data">
                   {data.name}
                 </TableCell>
-                <TableCell  align="right">{data.lastName}</TableCell>
-                <TableCell align="right">{data.ci}</TableCell>
-                <TableCell align="right">{data.email}</TableCell>
-                <TableCell align="right">{data.phone}</TableCell>
-                <TableCell align="right">{data.direction}</TableCell>
-                <TableCell align="right">{data.nationality}</TableCell>
+                 <TableCell align="right">{data.phone}</TableCell>
+                <TableCell align="right">{data.address}</TableCell>
                 <TableCell align="right">
                   <Button onClick={() => handleDelete(data._id)}>
                     ELIMINAR

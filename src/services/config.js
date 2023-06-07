@@ -3,7 +3,7 @@ import axios from 'axios'
 export const apiCall = async function (getOptions) {
   console.log('entro')
   const options = getOptions
-  const api = process.env.NEXT_PUBLIC_API_PERSONAL
+  const api = process.env.NEXT_PUBLIC_API_ACTIVOS
   const config = {
     method: options.method,
     url: `${api}${options.url}`,
