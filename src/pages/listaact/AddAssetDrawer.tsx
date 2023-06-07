@@ -1,15 +1,12 @@
 // ** React Imports
-import { useState } from 'react'
+import { ChangeEvent, useState } from 'react'
 
 // ** MUI Imports
 import Drawer from '@mui/material/Drawer'
-import Select from '@mui/material/Select'
 import Button from '@mui/material/Button'
-import MenuItem from '@mui/material/MenuItem'
 import { styled } from '@mui/material/styles'
 import TextField from '@mui/material/TextField'
 import IconButton from '@mui/material/IconButton'
-import InputLabel from '@mui/material/InputLabel'
 import Typography from '@mui/material/Typography'
 import Box, { BoxProps } from '@mui/material/Box'
 import FormControl from '@mui/material/FormControl'
@@ -23,15 +20,6 @@ import { useForm, Controller } from 'react-hook-form'
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
 
-// ** Store Imports
-import { useDispatch } from 'react-redux'
-
-// ** Actions Imports
-import user, { addUser } from 'src/store/apps/user'
-
-// ** Types Imports
-import { AppDispatch } from 'src/store'
-import { Direction } from '@mui/material';
 import axios from 'axios'
 
 interface SidebarAddUserType {
@@ -41,14 +29,15 @@ interface SidebarAddUserType {
 
 interface UserData {
   name: string
-  description:string
-  responsible:string
-  amount:number
-  supplier:string
-  location:string
-  worth:number
-  dateacquisition:string
+  description: string
+  responsible: string
+  amount: number
+  supplier: string
+  location: string
+  worth: number
+  dateacquisition: string
   warrantyexpirationdate: string
+  file: string
 }
 
 const showErrors = (field: string, valueLen: number, min: number) => {
@@ -84,14 +73,15 @@ const schema = yup.object().shape({
 
 const defaultValues = {
   name: '',
-  description:'',
-  responsible:'',
-  amount:0,
-  supplier:'',
-  location:'',
-  worth:0,
-  dateacquisition:'',
-  warrantyexpirationdate: ''
+  description: '',
+  responsible: '',
+  amount: 0,
+  supplier: '',
+  location: '',
+  worth: 0,
+  dateacquisition: '',
+  warrantyexpirationdate: '',
+  file: ''
 }
 
 const SidebarAddAsset = (props: SidebarAddUserType) => {
@@ -99,12 +89,11 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
   const { open, toggle } = props
 
   // ** State
-  const [plan, setPlan] = useState<string>('basic')
-  const [role, setRole] = useState<string>('subscriber')
-  const [asset, setAsset] = useState<UserData>();
+  const [asset] = useState<UserData>()
+  const [setSelectedImage] = useState<File | null>(null)
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
 
   // ** Hooks
-  const dispatch = useDispatch<AppDispatch>()
   const {
     reset,
     control,
@@ -116,26 +105,41 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
     resolver: yupResolver(schema)
   })
 
-  const handleSave = async() => {
-    console.log("handlesave")
+  const handleSave = async () => {
+    console.log('handlesave')
     console.log(asset)
-      await axios
-        .post(`https://falling-wildflower-5373.fly.dev/asset`, asset)
-        .then(response => {
-          console.log(response.data);
-          toggle()
-          reset()
-        })
-        .catch(error => {
-          console.error(error);
-        });
-  };
+    await axios
+      .post(`https://falling-wildflower-5373.fly.dev/asset`, asset)
+      .then(response => {
+        console.log(response.data)
+        toggle()
+        reset()
+      })
+      .catch(error => {
+        console.error(error)
+      })
+  }
 
   const handleClose = () => {
-    setPlan('basic')
-    setRole('subscriber')
     toggle()
     reset()
+  }
+
+  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files && event.target.files[0]
+    setSelectedImage(file || null)
+
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string)
+        defaultValues.file = reader.result as string
+      }
+      console.log(defaultValues.file)
+      reader.readAsDataURL(file)
+    } else {
+      setPreviewImage(null)
+    }
   }
 
   return (
@@ -155,6 +159,39 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
       </Header>
       <Box sx={{ p: 5 }}>
         <form onSubmit={handleSubmit(handleSave)}>
+          <FormControl>
+            <div>
+              <div style={{ marginBottom: '10px' }}>
+                <input type='file' onChange={handleImageChange} />
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                {previewImage && (
+                  <img src={previewImage} alt='Preview' style={{ maxWidth: '100%', maxHeight: '300px' }} />
+                )}
+                <br />
+              </div>
+            </div>
+          </FormControl>
+          <FormControl fullWidth sx={{ mb: 6 }}>
+            <Controller
+              name='name'
+              control={control}
+              rules={{ required: true }}
+              render={({ field: { value, onChange } }) => (
+                <TextField
+                  value={value}
+                  label='Nombre'
+                  placeholder='Juan'
+                  onChange={onChange}
+                  error={Boolean(errors.name)}
+                  autoComplete='off'
+                />
+              )}
+            />
+            {errors.description && (
+              <FormHelperText sx={{ color: 'error.main' }}>{errors.description.message}</FormHelperText>
+            )}
+          </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='description'
@@ -171,7 +208,9 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
                 />
               )}
             />
-            {errors.description && <FormHelperText sx={{ color: 'error.main' }}>{errors.description.message}</FormHelperText>}
+            {errors.description && (
+              <FormHelperText sx={{ color: 'error.main' }}>{errors.description.message}</FormHelperText>
+            )}
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
@@ -189,7 +228,9 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
                 />
               )}
             />
-            {errors.responsible && <FormHelperText sx={{ color: 'error.main' }}>{errors.responsible.message}</FormHelperText>}
+            {errors.responsible && (
+              <FormHelperText sx={{ color: 'error.main' }}>{errors.responsible.message}</FormHelperText>
+            )}
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
@@ -279,7 +320,9 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
                 />
               )}
             />
-            {errors.dateacquisition && <FormHelperText sx={{ color: 'error.main' }}>{errors.dateacquisition.message}</FormHelperText>}
+            {errors.dateacquisition && (
+              <FormHelperText sx={{ color: 'error.main' }}>{errors.dateacquisition.message}</FormHelperText>
+            )}
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
@@ -297,10 +340,11 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
                 />
               )}
             />
-            {errors.warrantyexpirationdate && <FormHelperText sx={{ color: 'error.main' }}>{errors.warrantyexpirationdate.message}</FormHelperText>}
+            {errors.warrantyexpirationdate && (
+              <FormHelperText sx={{ color: 'error.main' }}>{errors.warrantyexpirationdate.message}</FormHelperText>
+            )}
           </FormControl>
 
-          
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button size='large' type='submit' variant='contained' sx={{ mr: 3 }}>
               Aceptar
