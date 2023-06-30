@@ -5,7 +5,7 @@ import { Theme, SxProps, PaletteMode } from '@mui/material'
 import { Settings } from 'src/@core/context/settingsContext'
 import { SwipeableDrawerProps } from '@mui/material/SwipeableDrawer'
 
-export type Layout = 'vertical' | 'horizontal' | 'blank' | 'blankWithAppBar'
+export type Layout = 'vertical' | 'horizontal' | 'red' | 'blankWithAppBar'
 
 export type Skin = 'default' | 'bordered'
 

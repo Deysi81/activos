@@ -114,12 +114,10 @@ const SidebarEditProvider = (props: { providerId: string }) => {
   })
 
   const handleClose = () => {
-    window.location.reload() // 500 milisegundos (0.5 segundos)
+    setPlan('basic')
+    setRole('subscriber')
     reset()
   }
-  useEffect(() => {
-    getData()
-  }, [])
   const getData = async () => {
     await axios
       .get<UserData>(`${process.env.NEXT_PUBLIC_API_ACTIVOS}supplier/${providerId}`)
@@ -132,6 +130,11 @@ const SidebarEditProvider = (props: { providerId: string }) => {
       })
   }
 
+  useEffect(() => {
+    if (providerId) {
+      getData()
+    }
+  }, [providerId])
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAsset({ ...asset, [e.target.name]: e.target.value })
   }
@@ -140,10 +143,9 @@ const SidebarEditProvider = (props: { providerId: string }) => {
     e.preventDefault()
 
     try {
-      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ACTIVOS}supplier/update/${providerId}`, asset)
+      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ACTIVOS}supplier/${providerId}`, asset)
       console.log(asset)
       console.log(response.data)
-      handleClose()
     } catch (error) {
       console.error(error)
     }

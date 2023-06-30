@@ -3,7 +3,7 @@ import { ChangeEvent, FormEvent, useState } from 'react'
 
 // ** MUI Imports
 import Drawer from '@mui/material/Drawer'
-import Select from '@mui/material/Select'
+import Select, { SelectChangeEvent } from '@mui/material/Select'
 import Button from '@mui/material/Button'
 import MenuItem from '@mui/material/MenuItem'
 import { styled } from '@mui/material/styles'
@@ -30,9 +30,8 @@ import { useDispatch } from 'react-redux'
 
 import { useRouter } from 'next/router'
 
-// ** Types Imports
-
 import axios from 'axios'
+import register from '../register'
 
 interface SidebarAddUserType {
   open: boolean
@@ -41,8 +40,9 @@ interface SidebarAddUserType {
 
 interface UserData {
   name: string
-  phone: string
-  address: string
+  categoria: string
+  descripcion: string
+  presupuesto: number
 }
 
 const showErrors = (field: string, valueLen: number, min: number) => {
@@ -64,11 +64,12 @@ const Header = styled(Box)<BoxProps>(({ theme }) => ({
 }))
 
 const schema = yup.object().shape({
-  direction: yup.string().required(),
-  phone: yup
-    .string()
+  descripcion: yup.string().required(),
+  categoria: yup.string().required(),
+  presupuesto: yup
+    .number()
     .typeError('')
-    .min(10, obj => showErrors('Celular', obj.value.length, obj.min))
+    .min(10, obj => showErrors('Presupuesto', String(obj.value).length, obj.min))
     .required(),
   name: yup
     .string()
@@ -78,81 +79,59 @@ const schema = yup.object().shape({
 
 const defaultValues = {
   name: '',
-  phone: '',
-  address: ''
+  categoria: '',
+  descripcion: '',
+  presupuesto: 0
 }
 
 const SidebarAddProvider = (props: SidebarAddUserType) => {
   // ** Props
   const { open, toggle } = props
   const router = useRouter()
+  const handleCategoriaChange = (e: SelectChangeEvent<string>) => {
+    setAsset({ ...asset, categoria: e.target.value })
+  }
 
   // ** State
   const [plan, setPlan] = useState<string>('basic')
   const [role, setRole] = useState<string>('subscriber')
   const [asset, setAsset] = useState<UserData>({
     name: '',
-    phone: '',
-    address: ''
+    categoria: '',
+    descripcion: '',
+    presupuesto: 0
   })
 
-  // ** Hooks
   const {
     reset,
     control,
+    handleSubmit,
     formState: { errors }
-  } = useForm({
+  } = useForm<UserData>({
     defaultValues,
     mode: 'onChange',
     resolver: yupResolver(schema)
   })
-  const handleSave = async (asset: UserData) => {
-    await axios
-      .post(`${process.env.NEXT_PUBLIC_API_ACTIVOS}supplier/`, asset)
-      .then(response => {
-        console.log(response.data)
-        toggle()
-        reset()
-      })
-      .catch(error => {
-        console.error(error)
-      })
+  const handleSave = async (data: UserData) => {
+    try {
+      await axios.post(`https://falling-wildflower-5373.fly.dev/contables/`, data)
+      console.log('Asset saved:', data)
+      toggle()
+      reset()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  // const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
-  //   event.preventDefault()
-  //   try {
-  //     await axios.post(`https://falling-wildflower-5373.fly.dev/supplier/`, asset)
-  //     console.log('asset', asset)
-  //     toggle()
-  //     reset()
-  //     router.push('/proveedores/getprovider')
-  //   } catch (error) {
-  //     console.error(error)
-  //   }
-  // }
-
   const handleClose = () => {
-    window.location.reload()
-
+    setPlan('basic')
+    setRole('subscriber')
     toggle()
     reset()
   }
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAsset({ ...asset, [e.target.name]: e.target.value })
-  }
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-
-    try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ACTIVOS}supplier/`, asset)
-      console.log(asset)
-      console.log(response.data)
-    } catch (error) {
-      console.error(error)
-    }
   }
 
   return (
@@ -162,16 +141,16 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
       variant='temporary'
       onClose={handleClose}
       ModalProps={{ keepMounted: true }}
-      sx={{ '& .MuiDrawer-paper': { width: { xs: 400, sm: 750 } } }}
+      sx={{ '& .MuiDrawer-paper': { width: { xs: 300, sm: 500, md: 800, lg: 1000 } } }}
     >
       <Header>
-        <Typography variant='h6'>Agregar Proveedor</Typography>
+        <Typography variant='h6'>Agregar Contables</Typography>
         <IconButton size='small' onClick={handleClose} sx={{ color: 'text.primary' }}>
           <Icon icon='mdi:close' fontSize={20} />
         </IconButton>
       </Header>
       <Box sx={{ p: 5 }}>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit(handleSave)}>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='name'
@@ -191,45 +170,61 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
             />
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='phone'
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  value={asset.phone}
-                  label='Celular'
-                  placeholder='78906547'
-                  error={Boolean(errors.phone)}
-                  helperText={errors.phone?.message}
-                  onChange={handleChange}
-                  autoComplete='off'
-                />
-              )}
-            />
+            <InputLabel id='categoria-label'>Categoría</InputLabel>
+            <Select
+              labelId='categoria-label'
+              id='categoria'
+              value={asset.categoria}
+              onChange={handleCategoriaChange}
+              autoComplete='off'
+            >
+              <MenuItem value='Propiedades'>Propiedades</MenuItem>
+              <MenuItem value='Equipos y maquinaria'>Equipos y maquinaria</MenuItem>
+              <MenuItem value='Inventarios'>Inventarios</MenuItem>
+              <MenuItem value='Tecnología y sistemas'>Tecnología y sistemas</MenuItem>
+              <MenuItem value='Propiedad intelectual'>Propiedad intelectual</MenuItem>
+              <MenuItem value='Cuentas por cobrar'>Cuentas por cobrar</MenuItem>
+              <MenuItem value='Inversiones'>Inversiones</MenuItem>
+            </Select>
           </FormControl>
 
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
-              name='address'
+              name='descripcion'
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  value={asset.address}
+                  value={asset.descripcion}
                   label='Dirección'
                   placeholder='Calle La Paz n°415'
-                  error={Boolean(errors.address)}
-                  helperText={errors.address?.message}
+                  error={Boolean(errors.descripcion)}
+                  helperText={errors.descripcion?.message}
                   onChange={handleChange}
                   autoComplete='off'
                 />
               )}
             />
           </FormControl>
-
+          <FormControl fullWidth sx={{ mb: 6 }}>
+            <Controller
+              name='presupuesto'
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  value={asset.presupuesto}
+                  label='Presupuesto'
+                  error={Boolean(errors.presupuesto)}
+                  helperText={errors.presupuesto?.message}
+                  onChange={handleChange}
+                  autoComplete='off'
+                />
+              )}
+            />
+          </FormControl>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Button size='large' type='submit' variant='contained' sx={{ mr: 3 }} onClick={handleClose}>
+            <Button size='large' type='submit' variant='contained' sx={{ mr: 3 }}>
               Aceptar
             </Button>
             <Button size='large' variant='outlined' color='secondary' onClick={handleClose}>

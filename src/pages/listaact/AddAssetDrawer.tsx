@@ -1,5 +1,6 @@
 // ** React Imports
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
+import { InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material'
 
 // ** MUI Imports
 import Drawer from '@mui/material/Drawer'
@@ -10,7 +11,6 @@ import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import Box, { BoxProps } from '@mui/material/Box'
 import FormControl from '@mui/material/FormControl'
-import FormHelperText from '@mui/material/FormHelperText'
 
 // ** Third Party Imports
 import * as yup from 'yup'
@@ -19,6 +19,8 @@ import { useForm, Controller } from 'react-hook-form'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
+
+// ** Store Imports
 
 import axios from 'axios'
 
@@ -31,15 +33,18 @@ interface UserData {
   name: string
   description: string
   responsible: string
-  amount: number
+  price: number
   supplier: string
   location: string
-  worth: number
-  dateacquisition: string
-  warrantyexpirationdate: string
+  dateAcquisition: Date
+  warrantyExpirationDate: Date
   file: string
+  typeCategoryAsset: string //
 }
-
+interface assetCategory {
+  _id: string
+  assetCategory: string
+}
 const showErrors = (field: string, valueLen: number, min: number) => {
   if (valueLen === 0) {
     return `${field} field is required`
@@ -60,88 +65,143 @@ const Header = styled(Box)<BoxProps>(({ theme }) => ({
 
 const schema = yup.object().shape({
   direction: yup.string().required(),
-  phone: yup
-    .string()
-    .typeError('')
-    .min(10, obj => showErrors('Celular', obj.value.length, obj.min))
-    .required(),
+  responsible: yup.string().required(),
+  supplier: yup.string().required(),
+  location: yup.string().required(),
+  typeCategoryAsset: yup.string().required(),
+  dateAcquisition: yup.string().required(),
+  warrantyExpirationDate: yup.string().required(),
   name: yup
     .string()
     .min(3, obj => showErrors('Nombre', obj.value.length, obj.min))
-    .required()
+    .matches(/^[A-Za-z ]*$/, 'El nombre solo puede contener letras')
+    .required(),
+  price: yup.number().moreThan(0, 'El valor debe ser mayor que cero').required()
 })
 
 const defaultValues = {
   name: '',
   description: '',
   responsible: '',
-  amount: 0,
+  price: 0,
   supplier: '',
   location: '',
-  worth: 0,
-  dateacquisition: '',
-  warrantyexpirationdate: '',
-  file: ''
+  dateAcquisition: '',
+  warrantyExpirationDate: new Date('2023-07-27T15:10:58.870'),
+  file: '',
+  typeCategoryAsset: '' //
 }
 
-const SidebarAddAsset = (props: SidebarAddUserType) => {
+const SidebarAddProvider = (props: SidebarAddUserType) => {
   // ** Props
   const { open, toggle } = props
 
-  // ** State
-  const [asset] = useState<UserData>()
-  const [setSelectedImage] = useState<File | null>(null)
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  // const handleCategoriaChange = (e: ChangeEvent<{ value: unknown }>) => {
+  //   setAsset({ ...asset, typeCategoryAsset: e.target.value as string })
+  // }
 
-  // ** Hooks
+  const [previewfile, setPreviewfile] = useState<string | null>(null)
+  const [asset, setAsset] = useState<UserData>({
+    name: '',
+    description: '',
+    responsible: '',
+    supplier: '',
+    location: '',
+    price: 0,
+    dateAcquisition: new Date('2023-06-27T15:10:58.870'),
+    warrantyExpirationDate: new Date('2023-07-27T15:10:58.870'),
+    typeCategoryAsset: '',
+    file: ''
+  })
+
   const {
     reset,
     control,
-    handleSubmit,
     formState: { errors }
   } = useForm({
     defaultValues,
     mode: 'onChange',
     resolver: yupResolver(schema)
   })
-
-  const handleSave = async () => {
-    console.log('handlesave')
-    console.log(asset)
-    await axios
-      .post(`https://falling-wildflower-5373.fly.dev/asset`, asset)
-      .then(response => {
-        console.log(response.data)
-        toggle()
-        reset()
-      })
-      .catch(error => {
-        console.error(error)
-      })
-  }
-
   const handleClose = () => {
+    window.location.reload()
     toggle()
     reset()
   }
 
-  const handleImageChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files && event.target.files[0]
-    setSelectedImage(file || null)
+  // const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   setAsset({ ...asset, [e.target.name]: e.target.value })
+  // }
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target
+    setAsset(prevAsset => ({ ...prevAsset, [name]: value }))
+  }
+  // const handlefileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   if (e.target.files && e.target.files.length > 0) {
 
-    if (file) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPreviewImage(reader.result as string)
-        defaultValues.file = reader.result as string
+  //     console.log(e.target.files)
+  //     const selectedFile = e.target.files[0]
+  //     const reader = new FileReader()
+
+  //     reader.onload = () => {
+  //       if (reader.readyState === 2) {
+  //         const base64File = reader.result as string
+  //         setAsset({ ...asset, file: base64File, dateacquisition: new Date().toISOString() })
+  //         setPreviewfile(base64File)
+  //       }
+  //     }
+
+  //     reader.readAsDataURL(selectedFile)
+  //   }
+  // }
+
+  const handlefileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const reader = new FileReader()
+    reader.onload = function () {
+      if (reader.readyState === 2) {
+        const formattedDate = new Date().toISOString()
+        setAsset({ ...asset, file: reader.result as string })
+        setPreviewfile(reader.result as string)
       }
-      console.log(defaultValues.file)
-      reader.readAsDataURL(file)
-    } else {
-      setPreviewImage(null)
+    }
+    if (e.target.files && e.target.files.length > 0) {
+      console.log(e.target.files)
+      reader.readAsDataURL(e.target.files[0])
+      console.log('' + previewfile)
     }
   }
 
+  const handleSubmit = async () => {
+    try {
+      console.log(asset.warrantyExpirationDate)
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ACTIVOS}asset/`, asset)
+      console.log(asset.warrantyExpirationDate)
+      console.log(response.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  // const handleCategoryChange = (e: ChangeEvent<{ value: unknown }>, child: React.ReactNode) => {
+  //   setAsset({ ...asset, typeCategoryAsset: e.target.value as string })
+  // }
+  const handleCategoryChange = (e: ChangeEvent<{ value: unknown }>) => {
+    setAsset({ ...asset, typeCategoryAsset: e.target.value as string })
+  }
+
+  const [groupContable, setGroupContable] = useState<assetCategory[]>()
+
+  useEffect(() => {
+    getAsset()
+  }, [])
+  const getAsset = async () => {
+    try {
+      console.log(asset.warrantyExpirationDate)
+      const response = await axios.get<assetCategory[]>(`http://10.10.214.219:8080/depreciation-asset-list`)
+      setGroupContable(response.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
   return (
     <Drawer
       open={open}
@@ -149,204 +209,220 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
       variant='temporary'
       onClose={handleClose}
       ModalProps={{ keepMounted: true }}
-      sx={{ '& .MuiDrawer-paper': { width: { xs: 500, sm: 600 } } }}
+      sx={{ '& .MuiDrawer-paper': { width: { xs: 300, sm: 500, md: 800, lg: 1000 } } }}
     >
       <Header>
-        <Typography variant='h6'>Agregar Activo</Typography>
+        <Typography variant='h6'>Agregar Nuevo Activo</Typography>
         <IconButton size='small' onClick={handleClose} sx={{ color: 'text.primary' }}>
           <Icon icon='mdi:close' fontSize={20} />
         </IconButton>
       </Header>
       <Box sx={{ p: 5 }}>
-        <form onSubmit={handleSubmit(handleSave)}>
-          <FormControl>
-            <div>
-              <div style={{ marginBottom: '10px' }}>
-                <input type='file' onChange={handleImageChange} />
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                {previewImage && (
-                  <img src={previewImage} alt='Preview' style={{ maxWidth: '100%', maxHeight: '300px' }} />
-                )}
-                <br />
-              </div>
+        <form onSubmit={handleSubmit}>
+          <FormControl fullWidth sx={{ mb: 6 }}>
+            <label htmlFor='file'>Imagen</label>
+            <input type='file' id='file' name='file' onChange={handlefileChange} />
+            <div style={{ textAlign: 'center' }}>
+              {previewfile && (
+                <img
+                  src={previewfile}
+                  alt='Preview'
+                  style={{ maxWidth: '250px', maxHeight: '250px', borderRadius: '50%' }}
+                />
+              )}
             </div>
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='name'
               control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
+              render={({ field }) => (
                 <TextField
-                  value={value}
+                  {...field}
+                  value={asset.name}
                   label='Nombre'
-                  placeholder='Juan'
-                  onChange={onChange}
+                  placeholder='Nombre del Activo'
                   error={Boolean(errors.name)}
+                  helperText={errors.name?.message}
+                  onChange={handleChange}
                   autoComplete='off'
                 />
               )}
             />
-            {errors.description && (
-              <FormHelperText sx={{ color: 'error.main' }}>{errors.description.message}</FormHelperText>
-            )}
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='description'
               control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
+              render={({ field }) => (
                 <TextField
-                  value={value}
-                  label='descripcion'
-                  placeholder='78906547'
-                  onChange={onChange}
+                  {...field}
+                  value={asset.description}
+                  label='Descripcion'
+                  placeholder='descripcion'
                   error={Boolean(errors.description)}
+                  helperText={errors.description?.message}
+                  onChange={handleChange}
                   autoComplete='off'
                 />
               )}
             />
-            {errors.description && (
-              <FormHelperText sx={{ color: 'error.main' }}>{errors.description.message}</FormHelperText>
-            )}
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='responsible'
               control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
+              render={({ field }) => (
                 <TextField
-                  value={value}
-                  label='responsable'
-                  onChange={onChange}
-                  placeholder='Av. Bolivar n°415'
+                  {...field}
+                  value={asset.responsible}
+                  label='Responsable'
+                  placeholder='Responsable'
                   error={Boolean(errors.responsible)}
+                  helperText={errors.responsible?.message}
+                  onChange={handleChange}
                   autoComplete='off'
                 />
               )}
             />
-            {errors.responsible && (
-              <FormHelperText sx={{ color: 'error.main' }}>{errors.responsible.message}</FormHelperText>
-            )}
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='amount'
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
-                <TextField
-                  value={value}
-                  label='cantidad'
-                  onChange={onChange}
-                  placeholder='Av. Bolivar n°415'
-                  error={Boolean(errors.amount)}
-                  autoComplete='off'
-                />
-              )}
-            />
-            {errors.amount && <FormHelperText sx={{ color: 'error.main' }}>{errors.amount.message}</FormHelperText>}
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='supplier'
               control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
+              render={({ field }) => (
                 <TextField
-                  value={value}
-                  label='proveedor'
-                  onChange={onChange}
-                  placeholder='Av. Bolivar n°415'
+                  {...field}
+                  value={asset.supplier}
+                  label='Proveedor'
+                  placeholder=' '
                   error={Boolean(errors.supplier)}
+                  helperText={errors.supplier?.message}
+                  onChange={handleChange}
                   autoComplete='off'
                 />
               )}
             />
-            {errors.supplier && <FormHelperText sx={{ color: 'error.main' }}>{errors.supplier.message}</FormHelperText>}
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='location'
               control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
+              render={({ field }) => (
                 <TextField
-                  value={value}
-                  label='ubicacion'
-                  onChange={onChange}
-                  placeholder='Av. Bolivar n°415'
+                  {...field}
+                  value={asset.location}
+                  label='Ubicacion'
+                  placeholder=''
                   error={Boolean(errors.location)}
+                  helperText={errors.location?.message}
+                  onChange={handleChange}
                   autoComplete='off'
                 />
               )}
             />
-            {errors.location && <FormHelperText sx={{ color: 'error.main' }}>{errors.location.message}</FormHelperText>}
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
-              name='worth'
+              name='price'
               control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
+              render={({ field }) => (
                 <TextField
-                  value={value}
-                  label='precio'
-                  onChange={onChange}
-                  placeholder='Av. Bolivar n°415'
-                  error={Boolean(errors.worth)}
+                  {...field}
+                  value={asset.price}
+                  label='Precio'
+                  placeholder=' '
+                  error={Boolean(errors.price)}
+                  helperText={errors.price?.message}
+                  onChange={handleChange}
                   autoComplete='off'
                 />
               )}
             />
-            {errors.worth && <FormHelperText sx={{ color: 'error.main' }}>{errors.worth.message}</FormHelperText>}
-          </FormControl>
+          </FormControl>{' '}
+          <Typography variant='body2' gutterBottom>
+            Fecha de Adquisicion
+          </Typography>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
-              name='dateacquisition'
+              name='dateAcquisition'
               control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
+              render={({ field }) => (
                 <TextField
-                  value={value}
-                  label='fecha de adquisicion'
-                  onChange={onChange}
-                  placeholder='Av. Bolivar n°415'
-                  error={Boolean(errors.dateacquisition)}
+                  {...field}
+                  type='datetime-local'
+                  value={asset.dateAcquisition}
+                  placeholder=' '
+                  error={Boolean(errors.dateAcquisition)}
+                  helperText={errors.dateAcquisition?.message}
+                  onChange={handleChange}
                   autoComplete='off'
                 />
               )}
             />
-            {errors.dateacquisition && (
-              <FormHelperText sx={{ color: 'error.main' }}>{errors.dateacquisition.message}</FormHelperText>
-            )}
           </FormControl>
+          <Typography variant='body2' gutterBottom>
+            Fecha de expiración de la garantía
+          </Typography>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
-              name='warrantyexpirationdate'
+              name='warrantyExpirationDate'
               control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
+              render={({ field }) => (
                 <TextField
-                  value={value}
-                  label='fecha de expiracion de garantia'
-                  onChange={onChange}
-                  placeholder='Av. Bolivar n°415'
-                  error={Boolean(errors.warrantyexpirationdate)}
+                  {...field}
+                  type='datetime-local'
+                  value={asset.warrantyExpirationDate}
+                  placeholder=' '
+                  error={Boolean(errors.warrantyExpirationDate)}
+                  helperText={errors.warrantyExpirationDate?.message}
+                  onChange={handleChange}
                   autoComplete='off'
                 />
               )}
             />
-            {errors.warrantyexpirationdate && (
-              <FormHelperText sx={{ color: 'error.main' }}>{errors.warrantyexpirationdate.message}</FormHelperText>
-            )}
           </FormControl>
+          <FormControl fullWidth sx={{ mb: 6 }}>
+            <InputLabel id='typeCategoryAsset'>Categoría</InputLabel>
+            <Select
+              labelId='typeCategoryAsset-label'
+              id='typeCategoryAsset'
+              value={asset.typeCategoryAsset}
+              onChange={handleCategoryChange as (event: SelectChangeEvent<string>, child: React.ReactNode) => void}
+              autoComplete='off'
+            >
+              {groupContable?.map(asset => (
+                <MenuItem key={asset._id} value={asset.assetCategory}>
+                  {asset.assetCategory}
+                </MenuItem>
+              ))}
 
+              {/* <MenuItem value='Muebles y enseres de oficina'>Muebles y enseres de oficina</MenuItem>
+              <MenuItem value='Equipos e instalaciones'>Equipos e instalaciones</MenuItem>
+              <MenuItem value='Edificaciones'>Edificaciones</MenuItem>
+              <MenuItem value='Maquinaria en general'>Maquinaria en general</MenuItem> */}
+            </Select>
+              
+          </FormControl>
+          {/* sasdasd */}
+          {/* <FormControl fullWidth sx={{ mb: 6 }}>
+            <InputLabel id='typeCategoryAsset'>Categoría</InputLabel>
+            <Select
+              labelId='typeCategoryAsset-label'
+              id='typeCategoryAsset'
+              value={asset.typeCategoryAsset}
+              onChange={handleCategoryChange as (event: SelectChangeEvent<string>, child: React.ReactNode) => void}
+              autoComplete='off'
+            >
+              <MenuItem value='Muebles y enseres de oficina'>Muebles y enseres de oficina</MenuItem>
+              <MenuItem value='Equipos e instalaciones'>Equipos e instalaciones</MenuItem>
+              <MenuItem value='Edificaciones'>Edificaciones</MenuItem>
+              <MenuItem value='Maquinaria en general'>Maquinaria en general</MenuItem>
+            </Select>
+          </FormControl> */}
+          {/* cambios */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Button size='large' type='submit' variant='contained' sx={{ mr: 3 }}>
+            <Button size='large' type='submit' variant='outlined' onClick={handleClose} sx={{ mr: 3 }}>
               Aceptar
             </Button>
             <Button size='large' variant='outlined' color='secondary' onClick={handleClose}>
@@ -359,4 +435,4 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
   )
 }
 
-export default SidebarAddAsset
+export default SidebarAddProvider

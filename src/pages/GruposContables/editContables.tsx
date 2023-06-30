@@ -23,21 +23,14 @@ import { useForm, Controller } from 'react-hook-form'
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
 
-// ** Store Imports
-import { useDispatch } from 'react-redux'
-
 import axios from 'axios'
-
-interface SidebarAddUserType {
-  open: boolean
-  toggle: () => void
-}
 
 interface UserData {
   _id: string
   name: string
-  phone: string
-  address: string
+  categoria: string
+  descripcion: string
+  presupuesto: number
 }
 
 const showErrors = (field: string, valueLen: number, min: number) => {
@@ -59,8 +52,9 @@ const Header = styled(Box)<BoxProps>(({ theme }) => ({
 }))
 
 const schema = yup.object().shape({
-  direction: yup.string().required(),
-  phone: yup
+  descripcion: yup.string().required(),
+  Categoria: yup.string().required(),
+  presupuesto: yup
     .string()
     .typeError('')
     .min(10, obj => showErrors('Celular', obj.value.length, obj.min))
@@ -73,8 +67,9 @@ const schema = yup.object().shape({
 
 const defaultValues = {
   name: '',
-  phone: '',
-  address: ''
+  categoria: '',
+  descripcion: '',
+  presupuesto: 0
 }
 
 const SidebarEditProvider = (props: { providerId: string }) => {
@@ -87,8 +82,9 @@ const SidebarEditProvider = (props: { providerId: string }) => {
   const [asset, setAsset] = useState<UserData>({
     _id: '',
     name: '',
-    phone: '',
-    address: ''
+    categoria: '',
+    descripcion: '',
+    presupuesto: 0
   })
 
   const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -114,15 +110,13 @@ const SidebarEditProvider = (props: { providerId: string }) => {
   })
 
   const handleClose = () => {
-    window.location.reload() // 500 milisegundos (0.5 segundos)
+    setPlan('basic')
+    setRole('subscriber')
     reset()
   }
-  useEffect(() => {
-    getData()
-  }, [])
   const getData = async () => {
     await axios
-      .get<UserData>(`${process.env.NEXT_PUBLIC_API_ACTIVOS}supplier/${providerId}`)
+      .get<UserData>(`https://falling-wildflower-5373.fly.dev/supplier/${providerId}`)
       .then(response => {
         console.log(response.data)
         setAsset(response.data)
@@ -132,6 +126,11 @@ const SidebarEditProvider = (props: { providerId: string }) => {
       })
   }
 
+  useEffect(() => {
+    if (providerId) {
+      getData()
+    }
+  }, [providerId])
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setAsset({ ...asset, [e.target.name]: e.target.value })
   }
@@ -140,10 +139,9 @@ const SidebarEditProvider = (props: { providerId: string }) => {
     e.preventDefault()
 
     try {
-      const response = await axios.put(`${process.env.NEXT_PUBLIC_API_ACTIVOS}supplier/update/${providerId}`, asset)
+      const response = await axios.put(`https://falling-wildflower-5373.fly.dev/supplier/${providerId}`, asset)
       console.log(asset)
       console.log(response.data)
-      handleClose()
     } catch (error) {
       console.error(error)
     }
@@ -160,10 +158,10 @@ const SidebarEditProvider = (props: { providerId: string }) => {
         variant='temporary'
         onClose={toggleDrawer(false)}
         ModalProps={{ keepMounted: true }}
-        sx={{ '& .MuiDrawer-paper': { width: { xs: 400, sm: 750 } } }}
+        sx={{ '& .MuiDrawer-paper': { width: { xs: 400, sm: 800 } } }}
       >
         <Header>
-          <Typography variant='h6'>Agregar Proveedor</Typography>
+          <Typography variant='h6'>Grupos contables</Typography>
           <IconButton size='small' onClick={toggleDrawer(false)} sx={{ color: 'text.primary' }}>
             <Icon icon='mdi:close' fontSize={20} />
           </IconButton>
@@ -179,7 +177,6 @@ const SidebarEditProvider = (props: { providerId: string }) => {
                     {...field}
                     value={asset.name}
                     label='Nombre'
-                    placeholder='Ruth'
                     error={Boolean(errors.name)}
                     helperText={errors.name?.message}
                     onChange={handleChange}
@@ -190,16 +187,16 @@ const SidebarEditProvider = (props: { providerId: string }) => {
             </FormControl>
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
-                name='phone'
+                name='descripcion'
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    value={asset.phone}
+                    value={asset.descripcion}
                     label='Celular'
                     placeholder='78906547'
-                    error={Boolean(errors.phone)}
-                    helperText={errors.phone?.message}
+                    error={Boolean(errors.descripcion)}
+                    helperText={errors.descripcion?.message}
                     onChange={handleChange}
                     autoComplete='off'
                   />
@@ -209,16 +206,30 @@ const SidebarEditProvider = (props: { providerId: string }) => {
 
             <FormControl fullWidth sx={{ mb: 6 }}>
               <Controller
-                name='address'
+                name='presupuesto'
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
-                    value={asset.address}
-                    label='Dirección'
-                    placeholder='Av. Bolivar n°415'
-                    error={Boolean(errors.address)}
-                    helperText={errors.address?.message}
+                    value={asset.presupuesto}
+                    error={Boolean(errors.presupuesto)}
+                    helperText={errors.presupuesto?.message}
+                    onChange={handleChange}
+                    autoComplete='off'
+                  />
+                )}
+              />
+            </FormControl>
+            <FormControl fullWidth sx={{ mb: 6 }}>
+              <Controller
+                name='categoria'
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    value={asset.categoria}
+                    error={Boolean(errors.categoria)}
+                    helperText={errors.categoria?.message}
                     onChange={handleChange}
                     autoComplete='off'
                   />
@@ -227,7 +238,7 @@ const SidebarEditProvider = (props: { providerId: string }) => {
             </FormControl>
 
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              <Button size='large' type='submit' variant='contained' sx={{ mr: 3 }} onClick={handleClose}>
+              <Button size='large' type='submit' variant='contained' sx={{ mr: 3 }}>
                 Aceptar
               </Button>
               <Button size='large' variant='outlined' color='secondary' onClick={handleClose}>

@@ -13,15 +13,16 @@ import {
   Paper
 } from '@mui/material'
 import TextField from '@mui/material/TextField'
-import SidebarProviderUser from './addprovider'
-import SidebarAddProvider from './addprovider'
-import SidebarEditProvider from './editprovider'
+import SidebarProviderUser from './addContables'
+import SidebarAddProvider from './addContables'
+import SidebarEditProvider from './editContables'
 
 interface Provider {
   _id: string
   name: string
-  address: string
-  phone: number
+  categoria: string
+  descripcion: string
+  presupuesto: number
   asset: boolean
 }
 
@@ -40,10 +41,10 @@ const ProviderList: React.FC = () => {
   const fetchData = () => {
     console.log('fetchData')
     axios
-      .get<Provider[]>(`${process.env.NEXT_PUBLIC_API_ACTIVOS}supplier/`)
+      .get<Provider[]>(`https://falling-wildflower-5373.fly.dev/contables`)
       .then(response => {
         // setProvider(response.data)
-        const filteredproviders = response.data.filter(provider => !provider.asset)
+        const filteredproviders = response.data.filter(provider => provider.asset)
         setProvider(filteredproviders)
         console.log(provider)
       })
@@ -54,7 +55,7 @@ const ProviderList: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     await axios
-      .delete(`${process.env.NEXT_PUBLIC_API_ACTIVOS}supplier/${id}`)
+      .delete(`https://falling-wildflower-5373.fly.dev/contables/${id}`)
       .then(response => {
         console.log(response.data)
         fetchData()
@@ -78,31 +79,32 @@ const ProviderList: React.FC = () => {
     }
   }
 
+  const handleThemeChange = () => {
+    setTheme(theme === 'light' ? 'dark' : 'light')
+  }
+
   return (
     <>
-      <Button onClick={toggleAddproviderDrawer}>NUEVO Proveedor</Button>
+      <Button onClick={toggleAddproviderDrawer}>NUEVO GRUPO CONTABLES</Button>
       <SidebarAddProvider open={addproviderOpen} toggle={toggleAddproviderDrawer} />
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-          <TableHead style={{ backgroundColor: '#504F73', borderBottom: '2px solid black' }}>
+          <TableHead>
             <TableRow sx={{ '& .MuiTableCell-root': { py: theme => `${theme.spacing(2.5)} !important` } }}>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.4)' }}
-                sx={{ textAlign: 'center' }}
-              >
-                Nombre
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
+                NOMBRE
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
-                Direccion
-              </TableCell>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.4)' }}
-                sx={{ textAlign: 'center' }}
-              >
-                Celular
+                CATEGORIA
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
-                Acciones
+                DESCRIPCION
+              </TableCell>
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
+                PRESUPUESTO
+              </TableCell>
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
+                ACCIONES
               </TableCell>
             </TableRow>
           </TableHead>
@@ -112,18 +114,22 @@ const ProviderList: React.FC = () => {
                 <TableCell style={{ width: '100px' }} sx={{ textAlign: 'center' }}>
                   {provider.name}
                 </TableCell>
+
                 <TableCell style={{ width: '100px' }} sx={{ textAlign: 'center' }}>
-                  {provider.address}
+                  {provider.categoria}
                 </TableCell>
                 <TableCell style={{ width: '100px' }} sx={{ textAlign: 'center' }}>
-                  {provider.phone}
+                  {provider.descripcion}
+                </TableCell>
+                <TableCell style={{ width: '100px' }} sx={{ textAlign: 'center' }}>
+                  {provider.presupuesto}
                 </TableCell>
                 <TableCell sx={{ textAlign: 'center' }}>
                   <ButtonGroup size='small' aria-label='small outlined button group'>
                     <SidebarEditProvider providerId={provider._id}></SidebarEditProvider>
                     <Button
                       size='small'
-                      style={{ color: 'white', background: '#e53935' }}
+                      color='secondary'
                       variant='outlined'
                       onClick={() => handleDelete(provider._id)}
                     >

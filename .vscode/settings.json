@@ -33,7 +33,14 @@
   "npm.packageManager": "yarn",
   // Extension: cSpell
   "cSpell.words": [
-    "Customizer"
+    "addprovider",
+    "categoria",
+    "Customizer",
+    "dateacquisition",
+    "handlefile",
+    "hookform",
+    "providervider",
+    "warrantyexpirationdate"
   ],
   "search-node-modules.path": "node_modules",
   "markdown.extension.toc.updateOnSave": false

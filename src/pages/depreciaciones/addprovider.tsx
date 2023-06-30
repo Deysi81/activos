@@ -40,9 +40,9 @@ interface SidebarAddUserType {
 }
 
 interface UserData {
-  name: string
-  phone: string
-  address: string
+  assetCategory: string
+  usefulLife: number
+  asset: boolean
 }
 
 const showErrors = (field: string, valueLen: number, min: number) => {
@@ -77,9 +77,9 @@ const schema = yup.object().shape({
 })
 
 const defaultValues = {
-  name: '',
-  phone: '',
-  address: ''
+  assetCategory: '',
+  usefulLife: 0,
+  asset: true
 }
 
 const SidebarAddProvider = (props: SidebarAddUserType) => {
@@ -91,9 +91,9 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
   const [plan, setPlan] = useState<string>('basic')
   const [role, setRole] = useState<string>('subscriber')
   const [asset, setAsset] = useState<UserData>({
-    name: '',
-    phone: '',
-    address: ''
+    assetCategory: '',
+    usefulLife: 0,
+    asset: true
   })
 
   // ** Hooks
@@ -119,22 +119,8 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
       })
   }
 
-  // const handleSave = async (event: React.FormEvent<HTMLFormElement>) => {
-  //   event.preventDefault()
-  //   try {
-  //     await axios.post(`https://falling-wildflower-5373.fly.dev/supplier/`, asset)
-  //     console.log('asset', asset)
-  //     toggle()
-  //     reset()
-  //     router.push('/proveedores/getprovider')
-  //   } catch (error) {
-  //     console.error(error)
-  //   }
-  // }
-
   const handleClose = () => {
     window.location.reload()
-
     toggle()
     reset()
   }
@@ -147,7 +133,7 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
     e.preventDefault()
 
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ACTIVOS}supplier/`, asset)
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ACTIVOS}depreciation-asset-list/`, asset)
       console.log(asset)
       console.log(response.data)
     } catch (error) {
@@ -174,16 +160,16 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
         <form onSubmit={handleSubmit}>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
-              name='name'
+              name='assetCategory'
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  value={asset.name}
+                  value={asset.assetCategory}
                   label='Nombre'
-                  placeholder='Juan'
-                  error={Boolean(errors.name)}
-                  helperText={errors.name?.message}
+                  placeholder=' '
+                  error={Boolean(errors.assetCategory)}
+                  helperText={errors.assetCategory?.message}
                   onChange={handleChange}
                   autoComplete='off'
                 />
@@ -192,35 +178,16 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
-              name='phone'
+              name='usefulLife'
               control={control}
               render={({ field }) => (
                 <TextField
                   {...field}
-                  value={asset.phone}
-                  label='Celular'
+                  value={asset.usefulLife}
+                  label='usefulLife'
                   placeholder='78906547'
-                  error={Boolean(errors.phone)}
-                  helperText={errors.phone?.message}
-                  onChange={handleChange}
-                  autoComplete='off'
-                />
-              )}
-            />
-          </FormControl>
-
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
-              name='address'
-              control={control}
-              render={({ field }) => (
-                <TextField
-                  {...field}
-                  value={asset.address}
-                  label='Dirección'
-                  placeholder='Calle La Paz n°415'
-                  error={Boolean(errors.address)}
-                  helperText={errors.address?.message}
+                  error={Boolean(errors.usefulLife)}
+                  helperText={errors.usefulLife?.message}
                   onChange={handleChange}
                   autoComplete='off'
                 />

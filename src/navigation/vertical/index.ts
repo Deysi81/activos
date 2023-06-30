@@ -26,12 +26,12 @@ const navigation = (): VerticalNavItemsType => {
       children: [
         {
           title: 'Nuevo Activo',
-          path: '/listaact/AddAssetDrawer',
+          path: '/listaact/asset',
           icon: 'mdi:account-group'
         },
         {
-          title: 'Lista Activo',
-          path: '/listaact',
+          title: 'Grupos Contables',
+          path: '/depreciaciones/getprovider',
           icon: 'mdi:account-group'
         }
       ]
@@ -42,7 +42,7 @@ const navigation = (): VerticalNavItemsType => {
       children: [
         {
           title: 'Nuevo Proveedor',
-          path: '/getprovider',
+          path: '/proveedores/getprovider',
           icon: 'mdi:account-check'
         }
       ]
