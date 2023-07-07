@@ -134,7 +134,6 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
 
   const handleClose = () => {
     window.location.reload()
-
     toggle()
     reset()
   }

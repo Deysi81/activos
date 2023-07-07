@@ -16,6 +16,8 @@ import TextField from '@mui/material/TextField'
 import SidebarProviderUser from './addprovider'
 import SidebarAddProvider from './addprovider'
 import SidebarEditProvider from './editprovider'
+import Icon from 'src/@core/components/icon'
+import { useSettings } from 'src/@core/hooks/useSettings'
 
 interface Provider {
   _id: string
@@ -32,7 +34,8 @@ const ProviderList: React.FC = () => {
 
   const [addproviderOpen, setAddproviderOpen] = useState<boolean>(false)
   const toggleAddproviderDrawer = () => setAddproviderOpen(!addproviderOpen)
-
+  const { settings } = useSettings()
+  const { mode } = settings
   useEffect(() => {
     fetchData()
   }, [])
@@ -77,6 +80,14 @@ const ProviderList: React.FC = () => {
       setprovidervider({ ...providervider, [e.target.name]: e.target.value })
     }
   }
+  //estilo para dia y noche
+
+  const headerStyle = {
+    backgroundColor: mode === 'light' ? '#8c90f0' : '#5a5c75',
+    color: mode === 'light' ? 'black' : 'white',
+
+    fontFamily: 'Roboto, Arial, sans-serif'
+  }
 
   return (
     <>
@@ -84,21 +95,15 @@ const ProviderList: React.FC = () => {
       <SidebarAddProvider open={addproviderOpen} toggle={toggleAddproviderDrawer} />
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-          <TableHead style={{ backgroundColor: '#504F73', borderBottom: '2px solid black' }}>
+          <TableHead style={headerStyle}>
             <TableRow sx={{ '& .MuiTableCell-root': { py: theme => `${theme.spacing(2.5)} !important` } }}>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.4)' }}
-                sx={{ textAlign: 'center' }}
-              >
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Nombre
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Direccion
               </TableCell>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.4)' }}
-                sx={{ textAlign: 'center' }}
-              >
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Celular
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
@@ -123,11 +128,11 @@ const ProviderList: React.FC = () => {
                     <SidebarEditProvider providerId={provider._id}></SidebarEditProvider>
                     <Button
                       size='small'
-                      style={{ color: 'white', background: '#e53935' }}
+                      style={{ color: '#e53935', borderRadius: '10px' }}
                       variant='outlined'
                       onClick={() => handleDelete(provider._id)}
                     >
-                      Eliminiar
+                      <Icon icon='mdi:delete-outline' fontSize={20} />
                     </Button>
                   </ButtonGroup>
                 </TableCell>

@@ -222,8 +222,8 @@ const SidebarEditAsset = (props: { providerId: string }) => {
   }
   return (
     <>
-      <Button style={{ backgroundColor: '#94bb68', color: 'white', borderRadius: '10px' }} onClick={toggleDrawer(true)}>
-        EDITAR
+      <Button style={{ color: '#94bb68', borderRadius: '10px' }} onClick={toggleDrawer(true)}>
+        <Icon icon='mdi:pencil-outline' fontSize={20} />
       </Button>
       <Drawer
         open={state}

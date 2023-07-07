@@ -10,11 +10,17 @@ import {
   TableHead,
   ButtonGroup,
   Paper,
-  Tooltip
+  Tooltip,
+  TooltipProps,
+  Typography,
+  styled,
+  tooltipClasses
 } from '@mui/material'
 import AddAssetDrawer from './AddAssetDrawer'
 import SidebarEditAsset from './editAsset'
 import { format } from 'date-fns'
+import Icon from 'src/@core/components/icon'
+import { useSettings } from 'src/@core/hooks/useSettings'
 
 interface Asset {
   _id: string
@@ -37,9 +43,11 @@ interface Asset {
 const AssetList: React.FC = () => {
   const [assets, setAssets] = useState<Asset[]>([])
   const [dates] = useState<string[]>([])
-
   const [addAssetOpen, setAddAssetOpen] = useState<boolean>(false)
   const toggleAddAssetDrawer = () => setAddAssetOpen(!addAssetOpen)
+
+  const { settings } = useSettings()
+  const { mode } = settings
 
   useEffect(() => {
     fetchData()
@@ -90,6 +98,26 @@ const AssetList: React.FC = () => {
     return `data:image/png;base64,${base64String}`
   }
 
+  const HtmlTooltip = styled(({ className, ...props }: TooltipProps) => (
+    <Tooltip {...props} classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: '#f5f5f9',
+      color: 'rgba(0, 0, 0, 0.87)',
+      maxWidth: 220,
+      fontSize: theme.typography.pxToRem(12),
+      border: '1px solid #dadde9'
+    }
+  }))
+  //estilo para dia y noche
+
+  const headerStyle = {
+    backgroundColor: mode === 'light' ? '#8c90f0' : '#5a5c75',
+    color: mode === 'light' ? 'black' : 'white',
+
+    fontFamily: 'Roboto, Arial, sans-serif'
+  }
+
   return (
     <>
       <Button onClick={toggleAddAssetDrawer}>NUEVO Activo</Button>
@@ -97,66 +125,45 @@ const AssetList: React.FC = () => {
 
       <TableContainer component={Paper}>
         <Table sx={{ minWidth: 650 }} aria-label='simple table'>
-          <TableHead style={{ backgroundColor: '#504F73', borderBottom: '2px solid black' }}>
+          <TableHead style={headerStyle}>
             <TableRow sx={{ '& .MuiTableCell-root': { py: theme => `${theme.spacing(2.5)} !important` } }}>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)' }}
-                sx={{ textAlign: 'center' }}
-              >
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Imagen
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Nombre
               </TableCell>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)' }}
-                sx={{ textAlign: 'center' }}
-              >
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Descripción
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Responsable
               </TableCell>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.2)' }}
-                sx={{ textAlign: 'center' }}
-              >
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Proveedor
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Ubicación
               </TableCell>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.4)' }}
-                sx={{ textAlign: 'center' }}
-              >
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Precio
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Fecha de adquisición
               </TableCell>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.4)' }}
-                sx={{ textAlign: 'center' }}
-              >
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Fecha de expiración
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Valor Depreciado
               </TableCell>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.4)' }}
-                sx={{ textAlign: 'center' }}
-              >
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 Tipo de Categoria
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 UFV3
               </TableCell>
-              <TableCell
-                style={{ width: '50px', boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.4)' }}
-                sx={{ textAlign: 'center' }}
-              >
+              <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                 UFV4
               </TableCell>
               <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
@@ -177,14 +184,19 @@ const AssetList: React.FC = () => {
                   />
                 </TableCell>
 
-                <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
+                <TableCell
+                  style={{ width: '50px', fontFamily: 'Arial, Helvetica, sans-serif' }}
+                  sx={{ textAlign: 'center' }}
+                >
                   {asset.name}
                 </TableCell>
-                <Tooltip title={asset.description}>
+
+                <HtmlTooltip title={<React.Fragment>{asset.description}</React.Fragment>}>
                   <TableCell>
-                    {asset.description.length <= 10 ? asset.description : `${asset.description.substr(0, 10)}...`}
+                    {asset.description.length < 11 ? asset.description : `${asset.description.substr(0, 15)}..`}
                   </TableCell>
-                </Tooltip>
+                </HtmlTooltip>
+
                 <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                   {asset.responsible}
                 </TableCell>
@@ -209,9 +221,17 @@ const AssetList: React.FC = () => {
                   {asset.depreciatedValue}
                 </TableCell>
 
-                <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
+                <HtmlTooltip title={<React.Fragment>{asset.typeCategoryAsset}</React.Fragment>}>
+                  <TableCell>
+                    {asset.typeCategoryAsset.length < 11
+                      ? asset.typeCategoryAsset
+                      : `${asset.typeCategoryAsset.substr(0, 18)}...`}
+                  </TableCell>
+                </HtmlTooltip>
+
+                {/* <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                   {asset.typeCategoryAsset}
-                </TableCell>
+                </TableCell> */}
                 <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                   {asset.ufv3}
                 </TableCell>
@@ -223,11 +243,11 @@ const AssetList: React.FC = () => {
                     <SidebarEditAsset providerId={asset._id} />
                     <Button
                       size='small'
-                      style={{ color: 'white', background: '#e53935', borderRadius: '10px' }}
+                      style={{ color: '#e53935', borderRadius: '5px' }}
                       variant='outlined'
                       onClick={() => handleDelete(asset._id)}
                     >
-                      Eliminiar
+                      <Icon icon='mdi:delete-outline' fontSize={20} />
                     </Button>
                   </ButtonGroup>
                 </TableCell>

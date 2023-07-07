@@ -1,7 +1,6 @@
 // ** React Imports
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
-import { InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material'
-
+import Autocomplete from '@mui/material/Autocomplete'
 // ** MUI Imports
 import Drawer from '@mui/material/Drawer'
 import Button from '@mui/material/Button'
@@ -23,6 +22,8 @@ import Icon from 'src/@core/components/icon'
 // ** Store Imports
 
 import axios from 'axios'
+import { Select, SelectChangeEvent, MenuItem } from '@mui/material'
+import React from 'react'
 
 interface SidebarAddUserType {
   open: boolean
@@ -44,6 +45,14 @@ interface UserData {
 interface assetCategory {
   _id: string
   assetCategory: string
+}
+interface supplier {
+  _id: string
+  name: string
+}
+interface responsible {
+  _id: string
+  name: string
 }
 const showErrors = (field: string, valueLen: number, min: number) => {
   if (valueLen === 0) {
@@ -93,14 +102,11 @@ const defaultValues = {
 }
 
 const SidebarAddProvider = (props: SidebarAddUserType) => {
-  // ** Props
   const { open, toggle } = props
-
-  // const handleCategoriaChange = (e: ChangeEvent<{ value: unknown }>) => {
-  //   setAsset({ ...asset, typeCategoryAsset: e.target.value as string })
-  // }
-
   const [previewfile, setPreviewfile] = useState<string | null>(null)
+  const [groupContable, setGroupContable] = React.useState<assetCategory[]>([])
+  const [groupprovider, setGroupprovider] = useState<supplier[]>()
+  const [responsible, setResponsible] = useState<supplier[]>()
   const [asset, setAsset] = useState<UserData>({
     name: '',
     description: '',
@@ -128,32 +134,16 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
     toggle()
     reset()
   }
+  useEffect(() => {
+    getAsset()
+    getsupplier()
+    getResponsible()
+  }, [])
 
-  // const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-  //   setAsset({ ...asset, [e.target.name]: e.target.value })
-  // }
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setAsset(prevAsset => ({ ...prevAsset, [name]: value }))
   }
-  // const handlefileChange = (e: ChangeEvent<HTMLInputElement>) => {
-  //   if (e.target.files && e.target.files.length > 0) {
-
-  //     console.log(e.target.files)
-  //     const selectedFile = e.target.files[0]
-  //     const reader = new FileReader()
-
-  //     reader.onload = () => {
-  //       if (reader.readyState === 2) {
-  //         const base64File = reader.result as string
-  //         setAsset({ ...asset, file: base64File, dateacquisition: new Date().toISOString() })
-  //         setPreviewfile(base64File)
-  //       }
-  //     }
-
-  //     reader.readAsDataURL(selectedFile)
-  //   }
-  // }
 
   const handlefileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const reader = new FileReader()
@@ -181,27 +171,47 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
       console.error(error)
     }
   }
-  // const handleCategoryChange = (e: ChangeEvent<{ value: unknown }>, child: React.ReactNode) => {
-  //   setAsset({ ...asset, typeCategoryAsset: e.target.value as string })
-  // }
+
   const handleCategoryChange = (e: ChangeEvent<{ value: unknown }>) => {
     setAsset({ ...asset, typeCategoryAsset: e.target.value as string })
   }
 
-  const [groupContable, setGroupContable] = useState<assetCategory[]>()
-
-  useEffect(() => {
-    getAsset()
-  }, [])
   const getAsset = async () => {
     try {
       console.log(asset.warrantyExpirationDate)
       const response = await axios.get<assetCategory[]>(`http://10.10.214.219:8080/depreciation-asset-list`)
+
       setGroupContable(response.data)
     } catch (error) {
       console.error(error)
     }
   }
+
+  const handleProviderChange = (e: ChangeEvent<{ value: unknown }>) => {
+    setAsset({ ...asset, supplier: e.target.value as string })
+  }
+
+  const getsupplier = async () => {
+    try {
+      const response = await axios.get<supplier[]>(`http://10.10.214.219:8080/supplier`)
+      setGroupprovider(response.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  const handleResponsibleChange = (e: ChangeEvent<{ value: unknown }>) => {
+    setAsset({ ...asset, responsible: e.target.value as string })
+  }
+
+  const getResponsible = async () => {
+    try {
+      const response = await axios.get<responsible[]>(`http://10.10.214.219:3300/api/personal`)
+      setResponsible(response.data)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+
   return (
     <Drawer
       open={open}
@@ -250,7 +260,7 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
               )}
             />
           </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
+          <FormControl fullWidth sx={{ mb: 4 }}>
             <Controller
               name='description'
               control={control}
@@ -268,7 +278,24 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
               )}
             />
           </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
+          <FormControl fullWidth sx={{ mb: 0.1 }}>
+            <Typography variant='body2' gutterBottom>
+              Responsable
+            </Typography>
+            <Select
+              value={asset.responsible}
+              onChange={handleResponsibleChange as (event: SelectChangeEvent<string>, child: React.ReactNode) => void}
+              autoComplete='off'
+            >
+              {responsible?.map(asset => (
+                <MenuItem key={asset._id} value={asset.name}>
+                  {asset.name}
+                </MenuItem>
+              ))}
+            </Select>
+              
+          </FormControl>
+          {/* <FormControl fullWidth sx={{ mb: 2 }}>
             <Controller
               name='responsible'
               control={control}
@@ -285,8 +312,38 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
                 />
               )}
             />
+          </FormControl> */}
+          {/* <TextField
+            label='Buscar'
+            value={searchText}
+            onChange={{
+              handleSearchChange
+              buscar()
+            }}
+          />
+          <ul>
+            {autoCompleteResults.map(result => (
+              <li key={result._id}>{result.assetCategory}</li>
+            ))}
+          </ul> */}
+          <FormControl fullWidth sx={{ mb: 0.1 }}>
+            <Typography variant='body2' gutterBottom>
+              Proveedor
+            </Typography>
+            <Select
+              value={asset.supplier}
+              onChange={handleProviderChange as (event: SelectChangeEvent<string>, child: React.ReactNode) => void}
+              autoComplete='off'
+            >
+              {groupprovider?.map(asset => (
+                <MenuItem key={asset._id} value={asset.name}>
+                  {asset.name}
+                </MenuItem>
+              ))}
+            </Select>
+              
           </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
+          {/* <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='supplier'
               control={control}
@@ -303,7 +360,7 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
                 />
               )}
             />
-          </FormControl>
+          </FormControl> */}
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
               name='location'
@@ -364,7 +421,7 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
           <Typography variant='body2' gutterBottom>
             Fecha de expiración de la garantía
           </Typography>
-          <FormControl fullWidth sx={{ mb: 6 }}>
+          <FormControl fullWidth sx={{ mb: 3 }}>
             <Controller
               name='warrantyExpirationDate'
               control={control}
@@ -382,9 +439,21 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
               )}
             />
           </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <InputLabel id='typeCategoryAsset'>Categoría</InputLabel>
-            <Select
+          <FormControl fullWidth sx={{ mb: 1 }}>
+            <Typography variant='body2' gutterBottom>
+              Categoría
+            </Typography>
+            <Autocomplete
+              options={groupContable}
+              getOptionLabel={option => option.assetCategory}
+              value={groupContable.find(option => option.assetCategory === asset.typeCategoryAsset) || null}
+              onChange={(event, newValue) => {
+                setAsset({ ...asset, typeCategoryAsset: newValue?.assetCategory || '' })
+              }}
+              renderInput={params => <TextField {...params} label='Categoría' />}
+            />
+          </FormControl>
+          {/* <Select
               labelId='typeCategoryAsset-label'
               id='typeCategoryAsset'
               value={asset.typeCategoryAsset}
@@ -396,31 +465,8 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
                   {asset.assetCategory}
                 </MenuItem>
               ))}
-
-              {/* <MenuItem value='Muebles y enseres de oficina'>Muebles y enseres de oficina</MenuItem>
-              <MenuItem value='Equipos e instalaciones'>Equipos e instalaciones</MenuItem>
-              <MenuItem value='Edificaciones'>Edificaciones</MenuItem>
-              <MenuItem value='Maquinaria en general'>Maquinaria en general</MenuItem> */}
-            </Select>
-              
-          </FormControl>
-          {/* sasdasd */}
-          {/* <FormControl fullWidth sx={{ mb: 6 }}>
-            <InputLabel id='typeCategoryAsset'>Categoría</InputLabel>
-            <Select
-              labelId='typeCategoryAsset-label'
-              id='typeCategoryAsset'
-              value={asset.typeCategoryAsset}
-              onChange={handleCategoryChange as (event: SelectChangeEvent<string>, child: React.ReactNode) => void}
-              autoComplete='off'
-            >
-              <MenuItem value='Muebles y enseres de oficina'>Muebles y enseres de oficina</MenuItem>
-              <MenuItem value='Equipos e instalaciones'>Equipos e instalaciones</MenuItem>
-              <MenuItem value='Edificaciones'>Edificaciones</MenuItem>
-              <MenuItem value='Maquinaria en general'>Maquinaria en general</MenuItem>
-            </Select>
-          </FormControl> */}
-          {/* cambios */}
+            </Select> */}
+            
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button size='large' type='submit' variant='outlined' onClick={handleClose} sx={{ mr: 3 }}>
               Aceptar
@@ -436,3 +482,14 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
 }
 
 export default SidebarAddProvider
+export function ComboBox(category: assetCategory[]) {
+  return (
+    <Autocomplete
+      disablePortal
+      id='combo-box-demo'
+      options={category}
+      sx={{ width: 300 }}
+      renderInput={params => <TextField {...params} label='Movie' />}
+    />
+  )
+}
