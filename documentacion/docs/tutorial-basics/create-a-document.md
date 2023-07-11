@@ -1,7 +1,20 @@
-// ** React Imports
+---
+sidebar_position: 2
+---
+
+# Agregar nuevos activos
+
+## (AddAssetDrawer)
+
+El componente `SidebarAddProvider` es un componente de React que representa un panel deslizable para agregar un nuevo activo. A continuación, se explican las variables, constantes y funciones utilizadas en este componente.
+
+## Importaciones
+
+Las importaciones son los módulos, componentes y funciones externas utilizadas en el componente `SidebarAddProvider`
+
+```tsx
 import { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import Autocomplete from '@mui/material/Autocomplete'
-// ** MUI Imports
 import Drawer from '@mui/material/Drawer'
 import Button from '@mui/material/Button'
 import { styled } from '@mui/material/styles'
@@ -10,21 +23,20 @@ import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import Box, { BoxProps } from '@mui/material/Box'
 import FormControl from '@mui/material/FormControl'
-
-// ** Third Party Imports
 import * as yup from 'yup'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useForm, Controller } from 'react-hook-form'
-
-// ** Icon Imports
 import Icon from 'src/@core/components/icon'
-
-// ** Store Imports
-
 import axios from 'axios'
 import { Select, SelectChangeEvent, MenuItem } from '@mui/material'
 import React from 'react'
+```
 
+## TIPOS DE DATOS
+
+Estos son los tipos de datos utilizados en el componente SidebarAddProvider. Estos tipos de datos definen la estructura y las propiedades de los objetos utilizados en el componente.
+
+```tsx
 interface SidebarAddUserType {
   open: boolean
   toggle: () => void
@@ -40,20 +52,30 @@ interface UserData {
   dateAcquisition: Date
   warrantyExpirationDate: Date
   file: string
-  typeCategoryAsset: string //
+  typeCategoryAsset: string
 }
-interface assetCategory {
+
+interface AssetCategory {
   _id: string
   assetCategory: string
 }
-interface supplier {
+
+interface Supplier {
   _id: string
   name: string
 }
-interface responsible {
+
+interface Responsible {
   _id: string
   name: string
 }
+```
+
+## FUNCIONES AUXILIARES
+
+La función `showErrors` es una función auxiliar que toma un campo, la longitud de su valor y una longitud mínima requerida, y devuelve un mensaje de error si es necesario. Esta función se utiliza para mostrar mensajes de error de validación en el formulario.
+
+```tsx
 const showErrors = (field: string, valueLen: number, min: number) => {
   if (valueLen === 0) {
     return `${field} field is required`
@@ -63,7 +85,13 @@ const showErrors = (field: string, valueLen: number, min: number) => {
     return ''
   }
 }
+```
 
+## ESTILOS
+
+El objeto `Header` es un estilo personalizado creado utilizando el componente `styled` de Material-UI. Define los estilos para el encabezado del panel deslizable
+
+```tsx
 const Header = styled(Box)<BoxProps>(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -71,7 +99,13 @@ const Header = styled(Box)<BoxProps>(({ theme }) => ({
   justifyContent: 'space-between',
   backgroundColor: theme.palette.background.default
 }))
+```
 
+## ESQUEMA DE VALIDACION
+
+El objeto `schema` define las reglas de validación utilizando el módulo yup. Estas reglas se utilizan para validar los campos del formulario.
+
+```tsx
 const schema = yup.object().shape({
   direction: yup.string().required(),
   responsible: yup.string().required(),
@@ -87,7 +121,13 @@ const schema = yup.object().shape({
     .required(),
   price: yup.number().moreThan(0, 'El valor debe ser mayor que cero').required()
 })
+```
 
+## Valores por defecto
+
+El objeto `defaultValues` contiene los valores por defecto para los campos del formulario.
+
+```tsx
 const defaultValues = {
   name: '',
   description: '',
@@ -98,28 +138,27 @@ const defaultValues = {
   dateAcquisition: '',
   warrantyExpirationDate: new Date('2023-07-27T15:10:58.870'),
   file: '',
-  typeCategoryAsset: '' //
+  typeCategoryAsset: ''
 }
+```
 
-const SidebarAddAsset = (props: SidebarAddUserType) => {
+## COMPONENTES
+
+### Componente SidebarAddProvider
+
+El componente `SidebarAddProvider` es el componente principal que representa el panel deslizable para agregar un nuevo activo. Este componente incluye todo el formulario y la lógica necesaria para interactuar con él.
+
+```tsx
+const SidebarAddProvider = (props: SidebarAddUserType) => {
+  // ** Props y estado
   const { open, toggle } = props
   const [previewfile, setPreviewfile] = useState<string | null>(null)
-  const [groupContable, setGroupContable] = React.useState<assetCategory[]>([])
-  const [groupprovider, setGroupprovider] = useState<supplier[]>()
-  const [responsible, setResponsible] = useState<supplier[]>()
-  const [asset, setAsset] = useState<UserData>({
-    name: '',
-    description: '',
-    responsible: '',
-    supplier: '',
-    location: '',
-    price: 0,
-    dateAcquisition: new Date('2023-06-27T15:10:58.870'),
-    warrantyExpirationDate: new Date('2023-07-27T15:10:58.870'),
-    typeCategoryAsset: '',
-    file: ''
-  })
+  const [groupContable, setGroupContable] = React.useState<AssetCategory[]>([])
+  const [groupprovider, setGroupprovider] = useState<Supplier[]>()
+  const [responsible, setResponsible] = useState<Supplier[]>()
+  const [asset, setAsset] = useState<UserData>(defaultValues)
 
+  // ** Hook de formulario
   const {
     reset,
     control,
@@ -129,22 +168,28 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
     mode: 'onChange',
     resolver: yupResolver(schema)
   })
+
+  // ** Función para cerrar el panel deslizable
   const handleClose = () => {
     window.location.reload()
     toggle()
     reset()
   }
+
+  // ** Efecto de montaje del componente
   useEffect(() => {
     getAsset()
     getsupplier()
     getResponsible()
   }, [])
 
+  // ** Manejador de cambio de campo
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setAsset(prevAsset => ({ ...prevAsset, [name]: value }))
   }
 
+  // ** Manejador de cambio de archivo
   const handlefileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const reader = new FileReader()
     reader.onload = function () {
@@ -161,13 +206,14 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
     }
   }
 
+  // ** Manejador de envío del formulario
   const handleSubmit = async () => {
     try {
       console.log(asset.warrantyExpirationDate)
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ACTIVOS}asset/`, asset)
       console.log(asset.warrantyExpirationDate)
       console.log(asset.name)
-      console.log(asset.description)
+      console.logasset.description)
       console.log(asset.supplier)
       console.log(response.data)
       console.log(asset.typeCategoryAsset)
@@ -176,47 +222,55 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
     }
   }
 
+  // ** Manejador de cambio de categoría
   const handleCategoryChange = (e: ChangeEvent<{ value: unknown }>) => {
     setAsset({ ...asset, typeCategoryAsset: e.target.value as string })
   }
 
+  // ** Obtener categorías de activos
   const getAsset = async () => {
     try {
       console.log(asset.warrantyExpirationDate)
-      const response = await axios.get<assetCategory[]>(`http://10.10.214.219:8080/depreciation-asset-list`)
-
+      const response = await axios.get<AssetCategory[]>(`http://10.10.214.219:8080/depreciation-asset-list`)
       setGroupContable(response.data)
     } catch (error) {
       console.error(error)
     }
   }
 
+  // ** Manejador de cambio de proveedor
   const handleProviderChange = (e: ChangeEvent<{ value: unknown }>) => {
     setAsset({ ...asset, supplier: e.target.value as string })
   }
 
+  // ** Obtener proveedores
   const getsupplier = async () => {
     try {
-      const response = await axios.get<supplier[]>(`http://10.10.214.219:8080/supplier`)
+      const response = await axios.get<Supplier[]>(`http://10.10.214.219:8080/supplier`)
       setGroupprovider(response.data)
     } catch (error) {
       console.error(error)
     }
   }
+
+  // ** Manejador de cambio de responsable
   const handleResponsibleChange = (e: ChangeEvent<{ value: unknown }>) => {
     setAsset({ ...asset, responsible: e.target.value as string })
   }
 
+  // ** Obtener responsables
   const getResponsible = async () => {
     try {
-      const response = await axios.get<responsible[]>(`http://10.10.214.219:3300/api/personal`)
+      const response = await axios.get<Responsible[]>(`http://10.10.214.219:3300/api/personal`)
       setResponsible(response.data)
     } catch (error) {
       console.error(error)
     }
   }
 
-  return (
+  // ** Renderizado del componente
+
+return (
     <Drawer
       open={open}
       anchor='right'
@@ -424,7 +478,15 @@ const SidebarAddAsset = (props: SidebarAddUserType) => {
 }
 
 export default SidebarAddAsset
-export function ComboBox(category: assetCategory[]) {
+
+```
+
+### Componente ComboBox
+
+El componente `ComboBox` es una función que devuelve un componente `Autocomplete` de Material-UI para seleccionar una categoría de activo. Recibe un arreglo de categorías de activos y renderiza el componente con las opciones proporcionadas.
+
+```tsx
+export function ComboBox(category: AssetCategory[]) {
   return (
     <Autocomplete
       disablePortal
@@ -435,3 +497,4 @@ export function ComboBox(category: assetCategory[]) {
     />
   )
 }
+```

@@ -8,26 +8,15 @@ const navigation = (): VerticalNavItemsType => {
       path: '/home',
       icon: 'mdi:home-outline'
     },
-    {
-      title: 'Mensajes',
-      path: '/second-page',
-      icon: 'mdi:email-outline'
-    },
-    {
-      path: '/acl',
-      action: 'read',
-      subject: 'acl-page',
-      title: 'Control de Acceso',
-      icon: 'mdi:shield-outline'
-    },
+
     {
       title: 'Activos',
-      icon: 'mdi:account-outline',
+      icon: 'mdi:briefcase-account',
       children: [
         {
           title: 'Nuevo Activo',
           path: '/listaact/asset',
-          icon: 'mdi:account-group'
+          icon: 'mdi:currency-usd-circle'
         },
         {
           title: 'Grupos Contables',
@@ -46,11 +35,6 @@ const navigation = (): VerticalNavItemsType => {
           icon: 'mdi:account-check'
         }
       ]
-    },
-    {
-      title: 'Imagen',
-      path: '/user/usuario/base64/base64',
-      icon: 'mdi:account-box-multiple'
     }
   ]
 }

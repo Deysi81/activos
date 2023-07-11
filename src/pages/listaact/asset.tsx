@@ -12,13 +12,11 @@ import {
   Paper,
   Tooltip,
   TooltipProps,
-  Typography,
   styled,
   tooltipClasses
 } from '@mui/material'
 import AddAssetDrawer from './AddAssetDrawer'
 import SidebarEditAsset from './editAsset'
-import { format } from 'date-fns'
 import Icon from 'src/@core/components/icon'
 import { useSettings } from 'src/@core/hooks/useSettings'
 
@@ -45,13 +43,11 @@ const AssetList: React.FC = () => {
   const [dates] = useState<string[]>([])
   const [addAssetOpen, setAddAssetOpen] = useState<boolean>(false)
   const toggleAddAssetDrawer = () => setAddAssetOpen(!addAssetOpen)
-
   const { settings } = useSettings()
   const { mode } = settings
 
   useEffect(() => {
     fetchData()
-    // depreciation()
   }, [])
 
   const fetchData = () => {
@@ -67,19 +63,6 @@ const AssetList: React.FC = () => {
         console.error(error)
       })
   }
-  // const depreciation = () => {
-  //   axios
-  //     .get<Asset[]>(`${process.env.NEXT_PUBLIC_API_ACTIVOS}asset/`)
-  //     .then(response => {
-  //       const filteredAssets = response.data.filter(asset => !asset.isDeleted)
-  //       setAssets(filteredAssets)
-
-  //       depreciation()
-  //     })
-  //     .catch(error => {
-  //       console.error(error)
-  //     })
-  // }
 
   const handleDelete = async (id: string) => {
     await axios
@@ -228,10 +211,6 @@ const AssetList: React.FC = () => {
                       : `${asset.typeCategoryAsset.substr(0, 18)}...`}
                   </TableCell>
                 </HtmlTooltip>
-
-                {/* <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
-                  {asset.typeCategoryAsset}
-                </TableCell> */}
                 <TableCell style={{ width: '50px' }} sx={{ textAlign: 'center' }}>
                   {asset.ufv3}
                 </TableCell>

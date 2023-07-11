@@ -1,19 +1,27 @@
+---
+sidebar_position: 2
+---
+
+# AÑADIR NUEVO GRUPO CONTABLE
+
+## Importaciones
+
+Las importaciones son los módulos y componentes externos utilizados en el componente `SidebarAddProvider`.
+
+```tsx
 // ** React Imports
 import { ChangeEvent, FormEvent, useState } from 'react'
 
 // ** MUI Imports
 import Drawer from '@mui/material/Drawer'
-import Select from '@mui/material/Select'
 import Button from '@mui/material/Button'
-import MenuItem from '@mui/material/MenuItem'
 import { styled } from '@mui/material/styles'
 import TextField from '@mui/material/TextField'
 import IconButton from '@mui/material/IconButton'
-import InputLabel from '@mui/material/InputLabel'
+
 import Typography from '@mui/material/Typography'
 import Box, { BoxProps } from '@mui/material/Box'
 import FormControl from '@mui/material/FormControl'
-import FormHelperText from '@mui/material/FormHelperText'
 
 // ** Third Party Imports
 import * as yup from 'yup'
@@ -33,7 +41,13 @@ import { useRouter } from 'next/router'
 // ** Types Imports
 
 import axios from 'axios'
+```
 
+## Tipos de Datos
+
+El tipo de dato `SidebarAddUserType` define la estructura de los prop para el componente `SidebarAddProvider`. El tipo de dato UserData define la estructura de los datos del proveedor que se van a enviar al servidor.
+
+```tsx
 interface SidebarAddUserType {
   open: boolean
   toggle: () => void
@@ -44,7 +58,13 @@ interface UserData {
   usefulLife: number
   asset: boolean
 }
+```
 
+## Funciones de Utilidad
+
+La función `showErrors `se utiliza para mostrar mensajes de error específicos para diferentes campos del formulario.
+
+```tsx
 const showErrors = (field: string, valueLen: number, min: number) => {
   if (valueLen === 0) {
     return `${field} field is required`
@@ -54,7 +74,13 @@ const showErrors = (field: string, valueLen: number, min: number) => {
     return ''
   }
 }
+```
 
+## Componente Header
+
+El bloque `Header` define un componente estilizado utilizando la función styled de @mui/material. Este componente representa la cabecera del panel deslizable y tiene estilos personalizados.
+
+```tsx
 const Header = styled(Box)<BoxProps>(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
@@ -62,7 +88,13 @@ const Header = styled(Box)<BoxProps>(({ theme }) => ({
   justifyContent: 'space-between',
   backgroundColor: theme.palette.background.default
 }))
+```
 
+## Esquema Schema
+
+El bloque `schema` define un esquema de validación utilizando el paquete yup. Este esquema define las reglas de validación para los campos direction, phone y name del formulario.
+
+```tsx
 const schema = yup.object().shape({
   direction: yup.string().required(),
   phone: yup
@@ -75,21 +107,27 @@ const schema = yup.object().shape({
     .min(3, obj => showErrors('Nombre', obj.value.length, obj.min))
     .required()
 })
+```
 
+El bloque `defaultValues` define los valores iniciales para los campos del formulario. En este caso, los campos son assetCategory, usefulLife y asset.
+
+```tsx
 const defaultValues = {
   assetCategory: '',
   usefulLife: 0,
   asset: true
 }
+```
+
+## Componente SidebarAddProvider
+
+El componente `SidebarAddProvider` es el componente principal que muestra el panel deslizable para agregar proveedores. Utiliza el estado para almacenar los valores de los campos del formulario y los errores de validación.
+
+```tsx
 
 const SidebarAddProvider = (props: SidebarAddUserType) => {
   // ** Props
   const { open, toggle } = props
-  const router = useRouter()
-
-  // ** State
-  const [plan, setPlan] = useState<string>('basic')
-  const [role, setRole] = useState<string>('subscriber')
   const [asset, setAsset] = useState<UserData>({
     assetCategory: '',
     usefulLife: 0,
@@ -141,7 +179,12 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
     }
   }
 
-  return (
+```
+
+## Despliegue para agregar un grupo contable
+
+```tsx
+return (
     <Drawer
       open={open}
       anchor='right'
@@ -151,7 +194,7 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
       sx={{ '& .MuiDrawer-paper': { width: { xs: 400, sm: 750 } } }}
     >
       <Header>
-        <Typography variant='h6'>Agregar Proveedor</Typography>
+        <Typography variant='h6'>Agregar Nuevo grupo contable</Typography>
         <IconButton size='small' onClick={handleClose} sx={{ color: 'text.primary' }}>
           <Icon icon='mdi:close' fontSize={20} />
         </IconButton>
@@ -210,3 +253,5 @@ const SidebarAddProvider = (props: SidebarAddUserType) => {
 }
 
 export default SidebarAddProvider
+
+```
